@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { GameMeta } from "./games";
 
@@ -11,7 +12,7 @@ const NBA_HEADERS = {
   "x-nba-stats-origin": "stats",
   "x-nba-stats-token": "true",
   Connection: "keep-alive",
-} as const;
+};
 
 // Webshare proxy list — rotated randomly on each request to avoid bans.
 const PROXY_LIST = [
@@ -140,8 +141,6 @@ export async function fetchNbaJson(url: string): Promise<unknown> {
 
   const response = await fetch(url, {
     headers: NBA_HEADERS,
-    cache: "no-store",
-    // @ts-expect-error — agent is a Node.js extension not in the standard fetch types
     agent,
   });
 
