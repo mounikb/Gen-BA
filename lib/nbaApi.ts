@@ -137,16 +137,27 @@ export function buildShotChartUrl(
 }
 
 export async function fetchNbaJson(url: string): Promise<unknown> {
-  const agent = new HttpsProxyAgent(randomProxy());
+  const proxy = randomProxy();
+  // Logs IP:port only — credentials are hidden before the @ symbol
+  console.log(`[NBA] Trying proxy: ${proxy.split("@")[1]}`);
 
-  const response = await fetch(url, {
-    headers: NBA_HEADERS,
-    agent,
-  });
+  const agent = new HttpsProxyAgent(proxy);
 
-  if (!response.ok) {
-    throw new Error(`NBA API returned HTTP ${response.status}.`);
+  try {
+    const response = await fetch(url, {
+      headers: NBA_HEADERS,
+      agent,
+    });
+
+    if (!response.ok) {
+      console.log(`[NBA] Proxy ${proxy.split("@")[1]} failed — HTTP ${response.status}`);
+      throw new Error(`NBA API returned HTTP ${response.status}.`);
+    }
+
+    console.log(`[NBA] Proxy ${proxy.split("@")[1]} succeeded`);
+    return response.json();
+  } catch (err) {
+    console.log(`[NBA] Proxy ${proxy.split("@")[1]} error — ${err instanceof Error ? err.message : err}`);
+    throw err;
   }
-
-  return response.json();
 }
