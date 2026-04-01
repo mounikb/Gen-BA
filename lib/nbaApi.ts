@@ -1,3 +1,4 @@
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { GameMeta } from "./games";
 
 const NBA_HEADERS = {
@@ -11,6 +12,24 @@ const NBA_HEADERS = {
   "x-nba-stats-token": "true",
   Connection: "keep-alive",
 } as const;
+
+// Webshare proxy list — rotated randomly on each request to avoid bans.
+const PROXY_LIST = [
+  "http://jrzdkdpa:af4lib5r658v@31.59.20.176:6754",
+  "http://jrzdkdpa:af4lib5r658v@23.95.150.145:6114",
+  "http://jrzdkdpa:af4lib5r658v@198.23.239.134:6540",
+  "http://jrzdkdpa:af4lib5r658v@45.38.107.97:6014",
+  "http://jrzdkdpa:af4lib5r658v@107.172.163.27:6543",
+  "http://jrzdkdpa:af4lib5r658v@198.105.121.200:6462",
+  "http://jrzdkdpa:af4lib5r658v@216.10.27.159:6837",
+  "http://jrzdkdpa:af4lib5r658v@142.111.67.146:5611",
+  "http://jrzdkdpa:af4lib5r658v@191.96.254.138:6185",
+  "http://jrzdkdpa:af4lib5r658v@31.58.9.4:6077",
+];
+
+function randomProxy(): string {
+  return PROXY_LIST[Math.floor(Math.random() * PROXY_LIST.length)];
+}
 
 type ResultSet = {
   name?: string;
@@ -117,9 +136,13 @@ export function buildShotChartUrl(
 }
 
 export async function fetchNbaJson(url: string): Promise<unknown> {
+  const agent = new HttpsProxyAgent(randomProxy());
+
   const response = await fetch(url, {
     headers: NBA_HEADERS,
     cache: "no-store",
+    // @ts-expect-error — agent is a Node.js extension not in the standard fetch types
+    agent,
   });
 
   if (!response.ok) {
