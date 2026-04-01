@@ -35,7 +35,11 @@ export function parseNBAResponse(data: NbaResponse): Shot[] {
   if (!resultSet) return [];
 
   const headers: string[] = resultSet.headers;
-  const idx = (key: string) => headers.indexOf(key);
+  const idx = (key: string) => {
+    const i = headers.indexOf(key);
+    if (i === -1) throw new Error(`Missing expected header: ${key}`);
+    return i;
+  };
 
   return resultSet.rowSet.map((row): Shot => ({
     gameId: String(row[idx("GAME_ID")]),
